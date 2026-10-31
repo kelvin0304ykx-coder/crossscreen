@@ -1,0 +1,28 @@
+name: Publish public beta
+
+on:
+  push:
+    branches: [main]
+    paths: [release-manifest.json]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: public-beta-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Fetch the publication helper for this commit
+        env:
+          SOURCE_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/tools/publish_release.py
+        run: curl --fail --show-error --location --retry 2 "$SOURCE_URL" --output publish_release.py
+      - name: Verify and publish release attachments
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 publish_release.py

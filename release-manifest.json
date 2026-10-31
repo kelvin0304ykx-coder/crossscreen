@@ -1,0 +1,31 @@
+{
+  "tag": "v0.1.0-beta.1",
+  "application_version": "0.1.0",
+  "assets": [
+    {
+      "name": "CrossScreen-0.1.0-beta.1-macOS-arm64.zip",
+      "bytes": 69233429,
+      "sha256": "36b7c0fa095016dee3c68fc87afed0bae07fd5b2c28ac8bab027b19f7644dfa7"
+    },
+    {
+      "name": "CrossScreen-0.1.0-beta.1-source.zip",
+      "bytes": 101088,
+      "sha256": "787c4a0cf18d03132ff0f43d6b047701405bf63968bcbf2beb7b79f3ca379fd1"
+    },
+    {
+      "name": "CrossScreen-0.1.0-beta.1-Windows-x64.zip",
+      "bytes": 59374012,
+      "sha256": "4a753a4c7152159904737dd0cc6b4d5c47276831a7deb6856c2afb0fc93cb3ab"
+    },
+    {
+      "name": "Deskflow-1.27.0-source.tar.gz",
+      "bytes": 1329103,
+      "sha256": "dfe4327f5d0631ead9bacee743a96ee58024af11b5cc080af89b4c740b18e893"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 416,
+      "sha256": "31a485239e896cad7386f4419a3039c8908d1acab8560b7f6dc0b6a76321d002"
+    }
+  ]
+}
