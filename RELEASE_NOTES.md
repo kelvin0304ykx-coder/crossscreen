@@ -10,4 +10,4 @@
 
 Mac 包采用本地签名，尚未经过 Apple 公证。更新后若辅助功能授权未生效，移除旧授权项，再添加并开启当前的 CrossScreen.app。首次接收文件时请允许跨屏访问 Finder。
 
-[下载与使用指南](https://sibaihuo.com/crossscreen/)
+[下载与使用指南](https://www.sibaihuo.com/crossscreen/)

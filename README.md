@@ -2,14 +2,14 @@
 
 一套键盘和鼠标，在 Windows 与 Mac 之间自然跨屏。鼠标移到哪台电脑，键盘输入就跟到哪台。
 
-[下载测试版与使用指南](https://sibaihuo.com/crossscreen/) · [GitHub Releases](https://github.com/kelvin0304ykx-coder/crossscreen/releases)
+[下载测试版与使用指南](https://www.sibaihuo.com/crossscreen/) · [GitHub Releases](https://github.com/kelvin0304ykx-coder/crossscreen/releases)
 
 ## 下载
 
 | 设备 | 测试版下载 |
 | --- | --- |
-| Windows 11，Intel / AMD 64 位 | [Windows x64](https://sibaihuo.com/crossscreen/downloads/0.2.2-beta.1/CrossScreen-0.2.2-beta.1-Windows-x64.zip) |
-| Apple 芯片 Mac，M 系列 | [macOS arm64](https://sibaihuo.com/crossscreen/downloads/0.2.2-beta.1/CrossScreen-0.2.2-beta.1-macOS-arm64.zip) |
+| Windows 11，Intel / AMD 64 位 | [Windows x64](https://www.sibaihuo.com/crossscreen/downloads/0.2.2-beta.1/CrossScreen-0.2.2-beta.1-Windows-x64.zip) |
+| Apple 芯片 Mac，M 系列 | [macOS arm64](https://www.sibaihuo.com/crossscreen/downloads/0.2.2-beta.1/CrossScreen-0.2.2-beta.1-macOS-arm64.zip) |
 
 下载并解压后打开 CrossScreen.exe 或 CrossScreen.app。程序包包含运行依赖，首次启动会在本机生成独立设备身份。
 

@@ -1,4 +1,5 @@
 """Publish the public manifest's verified assets with GitHub Actions' repository token."""
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import os
@@ -20,25 +21,31 @@ def main():
         raise ValueError("Invalid release tag")
     target = Path("release-assets")
     target.mkdir(exist_ok=True)
-    assets = []
-    for entry in manifest["assets"]:
+    tagged_revision = manifest.get("source_commit", revision)
+    if not re.fullmatch(r"[0-9a-f]{40}", tagged_revision):
+        raise ValueError("Invalid source commit")
+
+    def fetch(entry):
         name = entry["name"]
         if not re.fullmatch(r"[A-Za-z0-9_.-]+", name) or not re.fullmatch(r"[a-f0-9]{64}", entry["sha256"]):
             raise ValueError("Invalid asset manifest")
-        url = f"https://sibaihuo.com/crossscreen/downloads/{tag[1:]}/{name}"
+        url = f"https://www.sibaihuo.com/crossscreen/downloads/{tag[1:]}/{name}"
         path = target / name
         with urllib.request.urlopen(url, timeout=180) as response, path.open("wb") as output:
             shutil.copyfileobj(response, output)
         if path.stat().st_size != entry["bytes"] or hashlib.sha256(path.read_bytes()).hexdigest() != entry["sha256"]:
             raise ValueError("Asset checksum mismatch: " + name)
-        assets.append(str(path))
+        return str(path)
+
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        assets = list(pool.map(fetch, manifest["assets"]))
     with urllib.request.urlopen(source + "RELEASE_NOTES.md", timeout=30) as response:
         Path("release-notes.md").write_bytes(response.read())
     exists = subprocess.run(["gh", "release", "view", tag, "--repo", repository], capture_output=True).returncode == 0
     if exists:
         raise RuntimeError(f"Release {tag} already exists")
     else:
-        subprocess.run(["gh", "release", "create", tag, *assets, "--repo", repository, "--target", revision,
+        subprocess.run(["gh", "release", "create", tag, *assets, "--repo", repository, "--target", tagged_revision,
                         "--prerelease", "--latest=false", "--title", f"跨屏 CrossScreen {tag[1:]}",
                         "--notes-file", "release-notes.md"], check=True)
 
