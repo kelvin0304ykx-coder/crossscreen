@@ -1,0 +1,12 @@
+CrossScreen / 跨屏 0.1.0
+Public test distribution 0.1.0-beta.1
+
+Interface, pairing configuration and process management are provided by this project.
+Input sharing uses the unmodified Deskflow 1.27.0 engine.
+
+Source: https://github.com/kelvin0304ykx-coder/crossscreen
+Downloads and usage: https://sibaihuo.com/crossscreen/
+
+The interface is licensed under GPL-3.0-only. Deskflow and all bundled
+libraries retain their original licenses and copyright notices.
+See THIRD_PARTY_NOTICES.md and licenses/ for details.

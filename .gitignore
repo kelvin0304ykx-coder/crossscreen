@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+.pytest_cache/
+build/
+dist/
+vendor/
+*.spec
+verification-private/
+release/
+build-icon.png
+*.pem
+*.key
+*.pyc

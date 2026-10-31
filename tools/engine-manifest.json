@@ -1,0 +1,12 @@
+[
+  {
+    "name": "deskflow-1.27.0-win-x64-portable.zip",
+    "sha256": "8d19004cc3625623489d96580c1b58fd13ee78185689907fd4478595f93fab9a",
+    "url": "https://github.com/deskflow/deskflow/releases/download/v1.27.0/deskflow-1.27.0-win-x64-portable.zip"
+  },
+  {
+    "name": "deskflow-1.27.0-macos-arm64.dmg",
+    "sha256": "dd21e79e566314394214906d3338c505d337af536fc580c022ee3fadffad0c97",
+    "url": "https://github.com/deskflow/deskflow/releases/download/v1.27.0/deskflow-1.27.0-macos-arm64.dmg"
+  }
+]
