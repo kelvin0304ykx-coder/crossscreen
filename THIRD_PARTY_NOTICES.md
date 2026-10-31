@@ -9,6 +9,8 @@ CrossScreen provides its own interface, pairing configuration and process superv
 | Python | 3.12.10 Windows / 3.11.15 Mac | Python Software Foundation license and notices are included. [Python source](https://www.python.org/downloads/source/). |
 | cryptography | 46.0.7 Windows / 50.0.2 Mac | Apache-2.0 OR BSD-3-Clause. License texts are included. [Corresponding source](https://github.com/pyca/cryptography). |
 | cffi / pycparser | bundled runtime | Original MIT / BSD notices are included. [cffi](https://github.com/python-cffi/cffi), [pycparser](https://github.com/eliben/pycparser). |
+| pywin32 / win32com | 311 (Windows) | Explorer integration. Original notices are included in `licenses/`. [Source](https://github.com/mhammond/pywin32/tree/b311). |
+| PyObjC core, Cocoa and Quartz | 13.0 (macOS) | Finder and mouse event integration. Component licenses are included in `licenses/`. [Source](https://github.com/ronaldoussoren/pyobjc). |
 | PyInstaller bootloader | 6.22.3 | Original license with the bootloader distribution exception is included. [Tagged source](https://github.com/pyinstaller/pyinstaller/tree/v6.22.3). |
 
 Libraries are used without source modifications and shipped as separate replaceable files. The public repository provides the interface source and build instructions. To rebuild with compatible library versions, install the requirements in a virtual environment and run `python tools/build.py` on the target platform. Application configuration and device identity are stored outside the program directory.

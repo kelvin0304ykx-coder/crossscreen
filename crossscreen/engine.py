@@ -25,15 +25,19 @@ def find_engine() -> Path:
     raise FileNotFoundError("未找到共享组件，请使用完整的程序文件夹。")
 
 
-def status_from_line(line: str):
+def status_from_line(line: str, mac_name="mac", *, client=False):
     # Only controlled status text leaves this parser. No input text or raw
     # debug lines are forwarded to the interface or written to disk.
     if "DEBUG:" in line or "VERBOSE:" in line:
         return None
+    if client and line.rstrip().endswith("entering computer"):
+        return "mac", "正在控制 Mac"
+    if client and line.rstrip().endswith("leaving computer"):
+        return "windows", "正在控制 Windows"
     if 'switch from ' in line:
         match = re.search(r'switch from "[^"]+" to "([^"]+)"', line)
         if match:
-            is_mac = match[1].lower() == "mac"
+            is_mac = match[1].lower() == mac_name.lower()
             return ("mac" if is_mac else "windows", "正在控制 Mac" if is_mac else "正在控制 Windows")
     lowered = line.lower()
     if "has connected" in lowered or "connected to server" in lowered:
@@ -172,7 +176,8 @@ class Engine(QObject):
         self.buffer += bytes(self.process.readAllStandardOutput()).decode("utf-8", "replace")
         while "\n" in self.buffer:
             line, self.buffer = self.buffer.split("\n", 1)
-            update = status_from_line(line)
+            update = status_from_line(line, self.config.peer_name if self.config else "mac",
+                                      client=bool(self.config and self.config.role == "client"))
             if update:
                 if update[0] in ("permission", "error"):
                     self.last_problem = update

@@ -8,12 +8,12 @@
 
 | 设备 | 测试版下载 |
 | --- | --- |
-| Windows 11，Intel / AMD 64 位 | [Windows x64](https://sibaihuo.com/crossscreen/downloads/CrossScreen-0.1.0-beta.1-Windows-x64.zip) |
-| Apple 芯片 Mac，M 系列 | [macOS arm64](https://sibaihuo.com/crossscreen/downloads/CrossScreen-0.1.0-beta.1-macOS-arm64.zip) |
+| Windows 11，Intel / AMD 64 位 | [Windows x64](https://sibaihuo.com/crossscreen/downloads/0.2.2-beta.1/CrossScreen-0.2.2-beta.1-Windows-x64.zip) |
+| Apple 芯片 Mac，M 系列 | [macOS arm64](https://sibaihuo.com/crossscreen/downloads/0.2.2-beta.1/CrossScreen-0.2.2-beta.1-macOS-arm64.zip) |
 
 下载并解压后打开 CrossScreen.exe 或 CrossScreen.app。程序包包含运行依赖，首次启动会在本机生成独立设备身份。
 
-当前发布为 0.1.0-beta.1，桌面程序显示版本 0.1.0。本轮整理了分发包、许可证和首次使用说明，应用可执行文件沿用实测版本。
+公开测试版为 **0.2.2-beta.1**，桌面程序显示 **0.2.2**。请分别更新两台电脑上的程序，原有配对可以继续使用。
 
 ## 第一次使用
 
@@ -26,6 +26,16 @@
 7. 两端点击「开始共享」。出现「已连接」后，把鼠标推过相邻屏幕边缘，在另一台电脑点一个输入框试打字，再移回来。
 
 配对信息会保存在各自电脑。每次开机后打开两端应用并点击开始，窗口可以最小化。关闭窗口或停止共享会结束本程序的共享连接。
+
+## 复制文字与拖文件
+
+在一台电脑复制文字，把鼠标移到另一台，再粘贴。Windows 使用 Ctrl+C / Ctrl+V，控制 Mac 时用键盘上的 Windows 键+C / V，对应 Command+C / V。
+
+先在接收端打开目标文件夹。从 Finder 或资源管理器按住普通文件，拖过两块屏幕的相邻边缘，到目标窗口的文件列表空白处松手。副本出现在该文件夹里，同名文件会追加序号。每次可拖 1–64 个普通文件，单个上限为 16 GiB。文件夹请先压缩成 ZIP。此上限是程序限制，大文件速度取决于磁盘和网络。
+
+首次往 Mac 拖文件时，按系统提示允许跨屏访问 Finder。文件通道默认使用键鼠端口的下一端口（键鼠端口为 65535 时使用 65534），两端需能互通。
+
+在一组 Windows 11 x64 和 Apple 芯片 Mac 上，六次连续从 Finder 快拖到资源管理器均产生了内容一致的副本。个别情况下，传完后 Mac 仍短暂报告左键按住，后续拖动已成功。
 
 ## 键位与恢复
 
@@ -43,7 +53,7 @@
 
 ## 连接与数据
 
-通信使用 TLS，并校验配对设备的 SHA-256 证书指纹。输入内容不写入日志，剪贴板共享默认关闭。应用不注册系统服务或开机启动项。
+通信使用 TLS，并校验配对设备的 SHA-256 证书指纹。输入内容不写入日志，文字剪贴板共享默认开启，可在 Windows 开始共享前关闭，单次上限 4 MiB。应用不注册系统服务或开机启动项。
 
 本机配置目录为 Windows 的 `%LOCALAPPDATA%\CrossScreen`，以及 Mac 的 `~/Library/Application Support/CrossScreen`。身份私钥仅存放在各自配置目录，分发包和配对信息均不包含该私钥。
 

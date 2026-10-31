@@ -25,7 +25,7 @@ def main():
         name = entry["name"]
         if not re.fullmatch(r"[A-Za-z0-9_.-]+", name) or not re.fullmatch(r"[a-f0-9]{64}", entry["sha256"]):
             raise ValueError("Invalid asset manifest")
-        url = "https://sibaihuo.com/crossscreen/downloads/" + name
+        url = f"https://sibaihuo.com/crossscreen/downloads/{tag[1:]}/{name}"
         path = target / name
         with urllib.request.urlopen(url, timeout=180) as response, path.open("wb") as output:
             shutil.copyfileobj(response, output)
@@ -36,10 +36,10 @@ def main():
         Path("release-notes.md").write_bytes(response.read())
     exists = subprocess.run(["gh", "release", "view", tag, "--repo", repository], capture_output=True).returncode == 0
     if exists:
-        subprocess.run(["gh", "release", "upload", tag, *assets, "--repo", repository, "--clobber"], check=True)
+        raise RuntimeError(f"Release {tag} already exists")
     else:
         subprocess.run(["gh", "release", "create", tag, *assets, "--repo", repository, "--target", revision,
-                        "--prerelease", "--latest=false", "--title", "跨屏 CrossScreen 0.1.0-beta.1",
+                        "--prerelease", "--latest=false", "--title", f"跨屏 CrossScreen {tag[1:]}",
                         "--notes-file", "release-notes.md"], check=True)
 
 

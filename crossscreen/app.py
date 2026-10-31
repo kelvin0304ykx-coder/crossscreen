@@ -7,7 +7,7 @@ import sys
 from PySide6.QtCore import Qt, QEvent, QLockFile, QTimer, QUrl
 from PySide6.QtGui import QColor, QDesktopServices, QFont, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import (
-    QApplication, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QFrame,
+    QApplication, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFormLayout, QFrame,
     QHBoxLayout, QLabel, QLineEdit, QMainWindow, QMessageBox, QPushButton,
     QSpinBox, QVBoxLayout, QWidget,
 )
@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 from . import __version__
 from .config import AppConfig, app_data_dir, atomic_write, default_host
 from .engine import Engine
+from .drag import DragBridge
 from .security import ensure_identity, make_pairing, parse_pairing
 from .permissions import mac_accessibility_granted, request_mac_accessibility
 
@@ -80,6 +81,8 @@ class Window(QMainWindow):
         self.resize(760, 740)
         self.setMinimumSize(680, 650)
         self.build_ui()
+        self.drag = DragBridge(self)
+        self.drag.notice.connect(self.file_status.setText)
         self.refresh_layout()
         if self.config_error:
             self.set_status("error", self.config_error)
@@ -147,7 +150,16 @@ class Window(QMainWindow):
         self.side.setCurrentIndex(0 if self.config.side == "right" else 1)
         self.side.currentIndexChanged.connect(self.refresh_layout)
         form.addRow("屏幕位置", self.side)
+        self.clipboard_box = QCheckBox("鼠标跨屏时共享剪贴板")
+        self.clipboard_box.setChecked(self.config.clipboard)
+        self.clipboard_box.setVisible(self.config.role == "server")
+        self.role.currentIndexChanged.connect(lambda i: self.clipboard_box.setVisible(i == 0))
+        form.addRow("", self.clipboard_box)
         box.addWidget(self.settings_widget)
+        self.file_status = QLabel("按住普通文件，拖过屏幕边缘，到对面打开的文件夹内容区松手")
+        self.file_status.setWordWrap(True)
+        self.file_status.setTextFormat(Qt.PlainText)
+        box.addWidget(self.file_status)
 
         row = QHBoxLayout()
         self.copy = QPushButton("复制本机配对信息")
@@ -220,7 +232,7 @@ class Window(QMainWindow):
 
     def collect(self):
         return replace(self.config, role="server" if self.role.currentIndex() == 0 else "client",
-                       host=self.host.text().strip(), port=self.port.value(),
+                       host=self.host.text().strip(), port=self.port.value(), clipboard=self.clipboard_box.isChecked(),
                        side="right" if self.side.currentIndex() == 0 else "left").validate()
 
     def refresh_layout(self, *_):
@@ -287,6 +299,8 @@ class Window(QMainWindow):
             self.set_status("permission", "请在辅助功能中允许跨屏；如果尚未列出，可添加 Applications 文件夹里的 CrossScreen.app。")
 
     def running_changed(self, running):
+        if not running:
+            self.drag.stop()
         self.start.setEnabled(not running)
         self.stop.setEnabled(running)
         self.settings_widget.setEnabled(not running)
@@ -294,6 +308,14 @@ class Window(QMainWindow):
         self.pair.setEnabled(not running)
 
     def set_status(self, state, detail):
+        if hasattr(self, "drag"):
+            if state in ("connected", "mac", "windows") and self.engine.running:
+                if self.drag.link is None:
+                    self.drag.start(self.config, self.engine_root)
+                if state in ("mac", "windows"):
+                    self.drag.screen_changed(state == "mac")
+            elif state in ("waiting", "error", "stopped", "permission"):
+                self.drag.stop()
         titles = {"starting": "正在连接", "connected": "已连接", "waiting": "等待连接",
                   "error": "需要检查", "stopped": "已停止", "ready": "准备就绪",
                   "permission": "需要系统授权", "mac": "正在控制 Mac", "windows": "正在控制 Windows"}
@@ -326,7 +348,7 @@ class Window(QMainWindow):
     def about(self):
         QMessageBox.information(self, "关于跨屏", f"跨屏 {__version__}\n\n"
             "键鼠共享组件：Deskflow 1.27.0（未经修改）\n"
-            "使用 TLS 加密与设备证书配对。输入内容不写入日志；剪贴板共享关闭。\n\n"
+            "使用 TLS 加密与设备证书配对。可在共享端设置剪贴板。文件在目标文件夹内校验后保存。\n\n"
             "https://github.com/deskflow/deskflow\n第三方许可随程序提供。")
 
     def closeEvent(self, event):

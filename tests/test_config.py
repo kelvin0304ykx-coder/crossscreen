@@ -19,14 +19,16 @@ def test_layout_rejects_config_injection(bad):
         render_layout("windows", bad, "right")
 
 
-def test_settings_use_tls_pin_peers_and_disable_clipboard(tmp_path):
+def test_settings_use_tls_pin_peers_and_configurable_clipboard(tmp_path):
     from crossscreen.config import AppConfig, write_engine_settings
     c = AppConfig(role="server", local_name="windows", peer_name="mac", host="127.0.0.1")
     path = write_engine_settings(c, tmp_path)
     text = path.read_text(encoding="utf-8")
     assert "tlsEnabled=true" in text
     assert "checkPeerFingerprints=true" in text
-    assert "enableClipboard=false" in text
+    assert "enableClipboard=true" in text
+    c.clipboard = False
+    assert "enableClipboard=false" in write_engine_settings(c, tmp_path).read_text(encoding="utf-8")
     assert "toFile=false" in text
     assert "computerName=windows" in text
     assert "127.0.0.1" in text

@@ -95,8 +95,11 @@ class AppConfig:
     port: int = 24870
     side: str = "left"
     peer_fingerprint: str = ""
+    clipboard: bool = True
 
     def validate(self):
+        if type(self.clipboard) is not bool:
+            raise ValueError("剪贴板设置无效")
         validate_name(self.local_name)
         validate_name(self.peer_name)
         validate_host(self.host)
@@ -179,7 +182,8 @@ closeToTray=false
 [server]
 externalConfig=true
 externalConfigFile={layout.as_posix()}
-enableClipboard=false
+enableClipboard={str(config.clipboard).lower()}
+clipboardSize=4
 protocol=barrier
 enableHeartbeat=true
 heartbeat=1000
