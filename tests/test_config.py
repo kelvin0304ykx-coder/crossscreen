@@ -1,4 +1,5 @@
 import json
+import sys
 import pytest
 
 
@@ -53,3 +54,28 @@ def test_default_address_prefers_real_lan_over_vpn_and_wsl():
     addresses = [("TestVPN", "198.18.0.1"), ("vEthernet (WSL)", "10.123.1.1"),
                  ("Tailscale", "100.100.1.2"), ("WLAN", "10.23.45.67")]
     assert select_lan_address(addresses) == "10.23.45.67"
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows profile junction")
+def test_windows_data_dir_resolves_shared_profile_junction(tmp_path, monkeypatch):
+    import os
+    import subprocess
+    from crossscreen.config import AppConfig, app_data_dir
+
+    local = tmp_path / "Local"
+    canonical = tmp_path / "shared-profile"
+    local.mkdir()
+    canonical.mkdir()
+    env = dict(os.environ, CROSSSCREEN_TEST_ALIAS=str(local / "CrossScreen"),
+               CROSSSCREEN_TEST_TARGET=str(canonical))
+    subprocess.run([
+        "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
+        "New-Item -ItemType Junction -Path $env:CROSSSCREEN_TEST_ALIAS "
+        "-Target $env:CROSSSCREEN_TEST_TARGET | Out-Null",
+    ], env=env, check=True, capture_output=True)
+    monkeypatch.delenv("CROSSSCREEN_DATA", raising=False)
+    monkeypatch.setenv("LOCALAPPDATA", str(local))
+
+    assert app_data_dir() == canonical.resolve()
+    AppConfig(host="127.0.0.1").save(app_data_dir() / "app.json")
+    assert AppConfig.load(canonical / "app.json").host == "127.0.0.1"

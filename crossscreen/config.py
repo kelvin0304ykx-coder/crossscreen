@@ -82,7 +82,9 @@ def app_data_dir() -> Path:
     if os.environ.get("CROSSSCREEN_DATA"):
         return Path(os.environ["CROSSSCREEN_DATA"]).expanduser().resolve()
     if sys.platform == "win32":
-        return Path(os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData/Local"))) / "CrossScreen"
+        # Resolve shared profile junctions before creating files. MSIX path
+        # virtualization can reject writes through the unresolved alias.
+        return (Path(os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData/Local"))) / "CrossScreen").resolve()
     return Path.home() / "Library" / "Application Support" / "CrossScreen"
 
 

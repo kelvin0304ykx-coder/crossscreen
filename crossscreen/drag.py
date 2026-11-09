@@ -9,9 +9,11 @@ from PySide6.QtCore import QAbstractNativeEventFilter, QObject, Qt, QTimer, Sign
 from PySide6.QtGui import QCursor
 from PySide6.QtWidgets import QApplication, QLabel
 
+from .clipboard import FileClipboard
 from .drop_target import folder_at
 from .filelink import FileLink
 from .finder_drag import FinderDragBoard, FinderGesture, FinderInput, finish_handoff
+from .native_clipboard import NativeClipboard
 
 
 class HostPress:
@@ -104,6 +106,7 @@ class DragBridge(QObject):
         super().__init__(window)
         self.window = window
         self.link = None
+        self.clipboard = None
         self.remote = self.local = None
         self.on_mac = False
         self.host_press = HostPress()
@@ -130,6 +133,11 @@ class DragBridge(QObject):
         self.shared_side = config.side
         link = FileLink(config, root / "tls/identity.pem", lambda msg: self.received.emit((link, msg)))
         self.link = link
+        try:
+            board = NativeClipboard(int(self.window.winId()))
+            self.clipboard = FileClipboard(link, config, root.parent / "clipboard-files", board, self.notice.emit)
+        except (ImportError, OSError, RuntimeError):
+            self.notice.emit("本机文件剪贴板暂不可用")
         link.thread.start()
         self.timer.start()
 
@@ -141,6 +149,7 @@ class DragBridge(QObject):
         if self.link:
             self.link.stop()
             self.link = None
+        self.clipboard = None
         self.remote = self.local = None
         self.on_mac = False
 
@@ -151,6 +160,8 @@ class DragBridge(QObject):
                 self.notice.emit("继续拖到对面的文件夹窗口，再松开鼠标")
 
     def screen_changed(self, mac):
+        if self.clipboard is not None and mac != self.on_mac:
+            self.clipboard.switched(mac == (sys.platform == "darwin"))
         if mac and not self.on_mac:
             self.host_press.begin(False)
             self.peer_press = None
@@ -232,6 +243,10 @@ class DragBridge(QObject):
         if link is not self.link:
             return
         op = msg["op"]
+        if self.clipboard is not None:
+            self.clipboard.message(msg)
+        if op.startswith("clip-"):
+            return
         if op == "layout" and self.config.role == "client":
             if msg.get("side") in ("left", "right"):
                 self.shared_side = msg["side"]
@@ -269,6 +284,8 @@ class DragBridge(QObject):
             self.notice.emit("文件通道已连接 · 可拖到对面文件夹")
 
     def edge_tick(self):
+        if self.clipboard is not None:
+            self.clipboard.poll()
         if (not self.link or not self.link.connected.is_set() or self.remote or self.local
                 or (self.board is not None and not self.on_mac)):
             self.edge.hide()

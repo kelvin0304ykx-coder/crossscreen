@@ -16,6 +16,7 @@ def main():
     if not engine.exists():
         raise SystemExit("Engine directory is missing")
     from PySide6.QtWidgets import QApplication
+    from crossscreen import __version__
     from crossscreen.app import app_icon
     app = QApplication([])
     icon = ROOT / "build-icon.png"
@@ -47,7 +48,7 @@ def main():
         info_path = bundle / "Contents/Info.plist"
         with info_path.open("rb") as f:
             info = plistlib.load(f)
-        info.update(CFBundleDisplayName="跨屏", CFBundleShortVersionString="0.2.2", CFBundleVersion="4",
+        info.update(CFBundleDisplayName="跨屏", CFBundleShortVersionString=__version__, CFBundleVersion="5",
                     NSAccessibilityUsageDescription="用于在本机接收和使用另一台电脑共享的键盘与鼠标。",
                     NSAppleEventsUsageDescription="读取松手位置对应的 Finder 文件夹，以便将文件复制到那里。",
                     NSLocalNetworkUsageDescription="通过局域网连接你的另一台电脑，共享键盘与鼠标。")
