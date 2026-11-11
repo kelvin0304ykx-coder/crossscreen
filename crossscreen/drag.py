@@ -107,10 +107,12 @@ class DragBridge(QObject):
         self.window = window
         self.link = None
         self.clipboard = None
+        self.content = None
         self.remote = self.local = None
         self.on_mac = False
         self.host_press = HostPress()
         self.peer_press = None
+        self.duplex_drop = None
         self.edge = Edge(self)
         self.received.connect(self.message)
         self.timer = QTimer(self)
@@ -130,9 +132,14 @@ class DragBridge(QObject):
     def start(self, config, root):
         self.stop()
         self.config = config
+        self.duplex = config.input_mode == 'duplex'
+        self.on_mac = sys.platform == 'darwin' if self.duplex else False
         self.shared_side = config.side
         link = FileLink(config, root / "tls/identity.pem", lambda msg: self.received.emit((link, msg)))
         self.link = link
+        if self.duplex:
+            from .shared_clipboard import SharedClipboard
+            self.content = SharedClipboard(link, config.clipboard, self.notice.emit)
         try:
             board = NativeClipboard(int(self.window.winId()))
             self.clipboard = FileClipboard(link, config, root.parent / "clipboard-files", board, self.notice.emit)
@@ -144,6 +151,10 @@ class DragBridge(QObject):
     def stop(self):
         self.host_press.begin(False)
         self.peer_press = None
+        self.duplex_drop = None
+        if self.content:
+            self.content.stop()
+            self.content = None
         self.timer.stop()
         self.edge.hide()
         if self.link:
@@ -155,7 +166,7 @@ class DragBridge(QObject):
 
     def arm(self, paths):
         if self.link and not self.local:
-            self.local = self.link.offer(paths, self.peer_press if self.board is not None else None)
+            self.local = self.link.offer(paths, self.peer_press if self.board is not None and not self.duplex else None)
             if self.local:
                 self.notice.emit("继续拖到对面的文件夹窗口，再松开鼠标")
 
@@ -165,7 +176,7 @@ class DragBridge(QObject):
         if mac and not self.on_mac:
             self.host_press.begin(False)
             self.peer_press = None
-        if self.board is not None and self.link and mac != self.on_mac:
+        if self.board is not None and self.link and mac != self.on_mac and not self.duplex:
             if mac:
                 self.gesture.enter(self.board.revision())
             elif self.gesture.take(self.board.revision(), self.cg.CGEventSourceButtonState(0, 0)):
@@ -190,11 +201,15 @@ class DragBridge(QObject):
         self.remote = self.local = None
 
     def pressed(self):
+        if getattr(self, 'duplex', False):
+            return
         serial = self.host_press.begin(bool(self.on_mac and self.link))
         if serial:
             self.link.send({"op": "layout", "press": serial})
 
     def released(self):
+        if getattr(self, 'duplex', False):
+            return
         if self.link and self.host_press.id and not self.on_mac and not (self.local or self.remote):
             import win32api
             try:
@@ -243,6 +258,8 @@ class DragBridge(QObject):
         if link is not self.link:
             return
         op = msg["op"]
+        if self.content is not None:
+            self.content.message(msg)
         if self.clipboard is not None:
             self.clipboard.message(msg)
         if op.startswith("clip-"):
@@ -253,6 +270,14 @@ class DragBridge(QObject):
             if isinstance(msg.get("press"), str) and len(msg["press"]) == 32:
                 self.peer_press = msg["press"]
         elif op == "offer":
+            if self.duplex and self.duplex_drop and time.monotonic() - self.duplex_drop[1] <= 1:
+                folder, _ = self.duplex_drop
+                self.duplex_drop = None
+                if folder:
+                    self.link.accept(msg['id'], folder, msg['count'])
+                else:
+                    self.link.send({'op':'cancel','id':msg['id']})
+                return
             if self.config.role == "server" and msg.get("press"):
                 if msg["press"] != self.host_press.id or self.host_press.pending:
                     folder = self.host_press.take(msg["press"], time.monotonic())
@@ -284,10 +309,13 @@ class DragBridge(QObject):
             self.notice.emit("文件通道已连接 · 可拖到对面文件夹")
 
     def edge_tick(self):
+        if self.content is not None:
+            self.content.poll()
         if self.clipboard is not None:
             self.clipboard.poll()
         if (not self.link or not self.link.connected.is_set() or self.remote or self.local
-                or (self.board is not None and not self.on_mac)):
+                or (self.board is not None and not self.on_mac)
+                or (getattr(self, 'duplex', False) and (self.on_mac != (sys.platform == 'darwin')))):
             self.edge.hide()
             return
         down = (ctypes.windll.user32.GetAsyncKeyState(1) & 0x8000 if sys.platform == "win32"
@@ -310,4 +338,41 @@ class DragBridge(QObject):
         x = rect.left() if left else rect.right() - 79
         self.edge.setGeometry(x, rect.top(), 80, rect.height())
         self.edge.show()
+
+    def native_event(self, msg):
+        if not self.link or not getattr(self, 'duplex', False):
+            return
+        op = msg['op']
+        if op == 'physical-button' and msg['button'] == 0 and msg['down']:
+            if self.board is not None:
+                self.gesture.enter(msg.get('revision'))
+        elif op == 'crossing':
+            self.duplex_drop = None
+            if (0 in msg['buttons'] and self.board is not None
+                    and self.gesture.take(self.board.revision(), True)):
+                try:
+                    paths = self.board.files()
+                    if paths:
+                        self.arm(paths)
+                except (ValueError, OSError):
+                    self.notice.emit('未取得拖动文件，请重新拖动')
+        elif op == 'source-button' and msg['button'] == 0 and not msg['down']:
+            if self.local:
+                self.link.send({'op':'release','id':self.local})
+                self.local = None
+        elif op == 'received-input' and msg['kind'] == 'button' and msg['button'] == 0 and not msg['down']:
+            if self.remote:
+                self.receive_here()
+            else:
+                pos = QCursor.pos()
+                try:
+                    if sys.platform == 'win32':
+                        import win32api
+                        point = win32api.GetCursorPos()
+                    else:
+                        point = pos.x(),pos.y()
+                    folder = folder_at(point)
+                except Exception:
+                    folder = None
+                self.duplex_drop = folder, time.monotonic()
 

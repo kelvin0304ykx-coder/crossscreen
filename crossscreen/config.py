@@ -98,8 +98,11 @@ class AppConfig:
     side: str = "left"
     peer_fingerprint: str = ""
     clipboard: bool = True
+    input_mode: str = 'legacy'
 
     def validate(self):
+        if self.input_mode not in ('legacy', 'duplex'):
+            raise ValueError('键鼠共享模式无效')
         if type(self.clipboard) is not bool:
             raise ValueError("剪贴板设置无效")
         validate_name(self.local_name)

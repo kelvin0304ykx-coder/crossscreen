@@ -48,8 +48,8 @@ def main():
         info_path = bundle / "Contents/Info.plist"
         with info_path.open("rb") as f:
             info = plistlib.load(f)
-        info.update(CFBundleDisplayName="跨屏", CFBundleShortVersionString=__version__, CFBundleVersion="5",
-                    NSAccessibilityUsageDescription="用于在本机接收和使用另一台电脑共享的键盘与鼠标。",
+        info.update(CFBundleDisplayName="跨屏", CFBundleShortVersionString=__version__.split('-')[0], CFBundleVersion="7",
+                    NSAccessibilityUsageDescription="用于捕获本机键鼠跨屏，并接收另一台已配对电脑的键盘与鼠标。",
                     NSAppleEventsUsageDescription="读取松手位置对应的 Finder 文件夹，以便将文件复制到那里。",
                     NSLocalNetworkUsageDescription="通过局域网连接你的另一台电脑，共享键盘与鼠标。")
         with info_path.open("wb") as f:

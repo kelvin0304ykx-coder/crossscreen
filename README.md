@@ -2,26 +2,38 @@
 
 一套键盘和鼠标，在 Windows 与 Mac 之间自然跨屏。鼠标移到哪台电脑，键盘输入就跟到哪台。
 
+## 0.4.0-dev2 开发测试版
+
+本分支增加跨屏原生双向输入。两端选择「双向自然跨屏（测试）」后，Mac 触控板和 Windows 鼠标都可以越过相邻边缘，各自键盘跟随同机指针。Mac 放在左边时，Mac 向右到 Windows，Windows 向左到 Mac。连接角色仅用于建立网络连接。
+
+双向模式使用项目自己的控制权协议与 Win32 / Quartz 原生输入接口，复用已有配对证书。每次只有一套键鼠控制对端；在接收电脑动用实体键鼠会恢复本机控制。Ctrl + Alt + Shift + F12 让当前电脑恢复本机并重建连接；旧的 F11 快捷键仅适用于原模式。按键按物理键位映射，接收电脑负责输入法，Mac Command 对应 Windows 键，快捷键须按接收系统使用。
+
+双方都开启剪贴板时，文字、富文本、位图及原有图片/视频文件通道可用。文字/位图内容最多 4 MiB，超过时可改复制图片文件。任一端关闭共享剪贴板，双向模式即停用其剪贴板互通。
+
+0.4.0-dev2 修复 Mac 在后台时无法及时同步聊天、网页和截图图片内容的问题；复制后无需激活跨屏窗口。网页图片附带的 HTTP 来源地址不会再被误当作本地文件引用。
+
+这是公开开发测试版。用户已实测两端实体键鼠自然跨屏及键盘跟随。Mac 后台图片经两端实际连接传到 Windows，像素校验及画图粘贴已通过；具体聊天软件兼容性、双向实际中文输入、连续拖放与睡眠恢复仍需继续验收。原有模式仍可选择，旧配置默认保留原模式。
+
 [下载测试版与使用指南](https://www.sibaihuo.com/crossscreen/) · [GitHub Releases](https://github.com/kelvin0304ykx-coder/crossscreen/releases)
 
 ## 下载
 
 | 设备 | 测试版下载 |
 | --- | --- |
-| Windows 11，Intel / AMD 64 位 | [Windows x64](https://www.sibaihuo.com/crossscreen/downloads/0.2.2-beta.1/CrossScreen-0.2.2-beta.1-Windows-x64.zip) |
-| Apple 芯片 Mac，M 系列 | [macOS arm64](https://www.sibaihuo.com/crossscreen/downloads/0.2.2-beta.1/CrossScreen-0.2.2-beta.1-macOS-arm64.zip) |
+| Windows 11，Intel / AMD 64 位 | [Windows x64](https://www.sibaihuo.com/crossscreen/downloads/0.4.0-dev2/CrossScreen-0.4.0-dev2-Windows-x64.zip) |
+| Apple 芯片 Mac，M 系列 | [macOS arm64](https://www.sibaihuo.com/crossscreen/downloads/0.4.0-dev2/CrossScreen-0.4.0-dev2-macOS-arm64.zip) |
 
 下载并解压后打开 CrossScreen.exe 或 CrossScreen.app。程序包包含运行依赖，首次启动会在本机生成独立设备身份。
 
-上面的公开下载包为 **0.2.2-beta.1**，桌面程序显示 **0.2.2**。更新两端程序时可保留原有配对。
+上面的公开下载包为 **0.4.0-dev2**，桌面程序显示 **0.4.0-dev2**。更新两端程序时可保留原有配对。
 
-本仓库的 `main` 分支已更新到 **0.3.0** 源码，新增图片和视频文件跨机粘贴，并修复 Windows 通过不同入口使用同一配置目录时的写入问题。体验文件粘贴需要两端都运行 0.3.0 或更新版本，可按下文从源码构建。
+源码与下载包均为 0.4.0-dev2。升级前退出旧程序，再替换应用；两端原有配置与配对可以继续使用。
 
 ## 第一次使用
 
-1. 把无线键鼠的 USB 接收器插在 Windows 上。两台电脑连接同一个局域网，Wi-Fi 和网线可以混用。
+1. Windows 使用已有鼠标键盘，Mac 可使用自带触控板和键盘。两台电脑连接同一个局域网，Wi-Fi 和网线可以混用。
 2. Windows 完整解压程序文件夹，再打开其中的 CrossScreen.exe。Mac 将 CrossScreen.app 放入自己的 Applications 文件夹后打开。
-3. Windows 选择「共享键鼠」，Mac 选择「接收键鼠」。地址填写 Windows 窗口中显示的局域网 IPv4 地址，两端端口一致。
+3. Windows 选择 Windows 角色，Mac 选择 Mac 角色，两端都选择「双向自然跨屏（测试）」。地址填写 Windows 窗口中显示的局域网 IPv4 地址，两端端口一致。
 4. Windows 点击「复制本机配对信息」，通过你已有的聊天工具或文本文件把整段信息转到 Mac，在 Mac 点「导入另一台电脑」并粘贴。再把 Mac 的配对信息反向导入 Windows。配对信息包含地址、设备名和公钥指纹。
 5. 按你面向屏幕时的实际摆放位置选择 Mac 在左边还是右边。布局由共享键鼠的 Windows 设置决定。
 6. Mac 点击「允许 Mac 键鼠控制」，在系统设置的隐私与安全性中允许 CrossScreen 的辅助功能访问。若 Windows 防火墙询问网络访问，请允许用于两台电脑互通的私人网络。
@@ -37,7 +49,7 @@
 
 首次往 Mac 拖文件时，按系统提示允许跨屏访问 Finder。文件通道默认使用键鼠端口的下一端口（键鼠端口为 65535 时使用 65534），两端需能互通。
 
-0.2.2-beta.1 在一组 Windows 11 x64 和 Apple 芯片 Mac 上实测，六次连续从 Finder 快拖到资源管理器均产生了内容一致的副本。个别情况下，传完后 Mac 仍短暂报告左键按住，后续拖动已成功。
+此前 0.2.2 版本在一组 Windows 11 x64 和 Apple 芯片 Mac 上实测，六次连续从 Finder 快拖到资源管理器均产生了内容一致的副本。个别情况下，传完后 Mac 仍短暂报告左键按住，后续拖动已成功。
 
 ## 复制粘贴图片和视频文件（0.3.0）
 
@@ -50,16 +62,16 @@
 ## 键位与恢复
 
 - 在 Mac 上，键盘的 Windows 键对应 Command，Ctrl 保持 Ctrl。
-- Ctrl + Alt + Shift + F12 切回 Windows。
-- Ctrl + Alt + Shift + F11 切到 Mac。
+- 双向模式：Ctrl + Alt + Shift + F12 让当前电脑恢复本机控制并重建连接。
+- 原模式：Ctrl + Alt + Shift + F12 切回 Windows，Ctrl + Alt + Shift + F11 切到 Mac。
 - Windows 完整文件夹需要保留，单独移动 exe 会缺少运行组件。
 - Mac 当前为本地签名测试版，尚未经过 Apple 公证。若系统拦截，请先确认下载来源和 SHA-256，再按 macOS 系统设置提供的「仍要打开」入口决定是否运行。
 - 更新 Mac 程序后，若辅助功能显示已开启但程序仍提示未授权，退出跨屏，在辅助功能列表移除旧的 CrossScreen，再添加并允许当前的 CrossScreen.app，然后重新打开。
-- 本程序与 Deskflow 使用同一个底层组件，使用前请退出另一份同类组件。
+- 双向模式由跨屏原生实现，原模式使用 Deskflow；使用前请退出其他同类键鼠共享程序，避免同时捕获输入。
 
 ## 当前范围
 
-首轮实测包含 Windows 11 x64 与 Apple 芯片 Mac 的双向鼠标跨屏、键盘跟随、停止和重新启动。Windows 安全桌面、Mac 锁屏与安全输入、休眠唤醒、游戏输入和不同系统版本尚需更多测试反馈。当前下载包分别面向 Windows x64 和 Apple 芯片 Mac，Intel Mac、Windows ARM 与 Linux 尚未提供安装包。
+0.4.0-dev2 的实测范围见上方版本说明。Windows 安全桌面、Mac 锁屏与安全输入、休眠唤醒、游戏输入和不同系统版本尚需更多测试反馈。当前下载包分别面向 Windows x64 和 Apple 芯片 Mac，Intel Mac、Windows ARM 与 Linux 尚未提供安装包。
 
 ## 连接与数据
 
@@ -69,7 +81,7 @@
 
 ## 源码与构建
 
-本项目提供桌面界面、设备配置、证书配对与共享组件的生命周期管理。键鼠捕获与跨系统传输使用未经修改的 Deskflow 1.27.0。
+本项目提供桌面界面、设备配置、证书配对、双向原生输入和文件传输。原有单向兼容模式使用未经修改的 Deskflow 1.27.0，双向模式由 `duplex.py`、`native_engine.py` 和两端原生适配器实现，不启动 Deskflow。
 
 需要 Python 3.10 或以上版本。先建立虚拟环境，安装 `requirements.txt`，再运行以下命令。
 

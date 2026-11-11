@@ -1,8 +1,9 @@
-CrossScreen / 跨屏 0.2.2
-Public test distribution 0.2.2-beta.1
+CrossScreen / 跨屏 0.4.0-dev2
+Public development test distribution 0.4.0-dev2
 
 Interface, pairing configuration and process management are provided by this project.
-Input sharing uses the unmodified Deskflow 1.27.0 engine.
+Duplex input sharing uses this project's Win32 / Quartz implementation.
+The compatibility mode uses the unmodified Deskflow 1.27.0 engine.
 
 Source: https://github.com/kelvin0304ykx-coder/crossscreen
 Downloads and usage: https://sibaihuo.com/crossscreen/

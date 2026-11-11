@@ -180,8 +180,10 @@ class FileClipboard:
         elif op == "offline":
             self.reset()
         elif op == "layout" and msg.get("clipboard_files") == 1:
-            self.enabled = (self.config.clipboard if self.config.role == "server"
-                            else msg.get("clipboard_enabled") is True)
+            self.enabled = ((self.config.clipboard and msg.get('clipboard_enabled') is True)
+                            if getattr(self.config, 'input_mode', 'legacy') == 'duplex' else
+                            (self.config.clipboard if self.config.role == "server"
+                             else msg.get("clipboard_enabled") is True))
             if self.enabled:
                 self.notice("文件通道已连接 · 支持拖放及图片、视频文件粘贴")
         elif self.enabled:

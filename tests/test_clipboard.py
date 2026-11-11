@@ -69,6 +69,18 @@ def connect(tmp_path, *, role="server", enabled=True, peer=True):
     return board, link, clipboard
 
 
+def test_duplex_file_clipboard_requires_both_switches(tmp_path):
+    from crossscreen.config import AppConfig
+    from crossscreen.clipboard import FileClipboard
+    for role in ('server', 'client'):
+        for local, peer in ((False,True),(True,False),(True,True)):
+            c = FileClipboard(Link(),AppConfig(role=role,clipboard=local,input_mode='duplex'),
+                              tmp_path / 'cache', Board(), lambda _:None)
+            c.message({'op':'online'})
+            c.message({'op':'layout','clipboard_files':1,'clipboard_enabled':peer})
+            assert c.enabled == (local and peer)
+
+
 def receive(clipboard, link, data=b"media"):
     token = "b" * 32
     clipboard.message({"op": "clip-offer", "id": token, "count": 1, "size": len(data)})

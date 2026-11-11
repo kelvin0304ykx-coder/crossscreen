@@ -347,6 +347,8 @@ class FileLink:
                         self.notify(msg)
                 elif op in ("offer", "release", "cancel", "saved", "layout", "clip-offer", "clip-saved"):
                     self.notify(msg)
+                elif op == 'clip-content' and self.config.input_mode == 'duplex':
+                    self.notify(msg)
                 else:
                     raise ValueError("无效的传输顺序")
         finally:

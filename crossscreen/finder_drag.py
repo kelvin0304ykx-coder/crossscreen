@@ -16,6 +16,14 @@ def finish_handoff(device, defer, still_away):
 
 
 class FinderInput:
+    def __init__(self, marker=None):
+        self.marker = marker
+
+    def mark(self, event):
+        if self.marker is not None:
+            import Quartz as q
+            q.CGEventSetIntegerValueField(event, q.kCGEventSourceUserData, self.marker)
+
     def signature(self):
         from AppKit import NSWorkspace
         import Quartz as q
@@ -30,6 +38,7 @@ class FinderInput:
         for down in (True, False):
             key = q.CGEventCreateKeyboardEvent(None, 53, down)  # Escape
             q.CGEventSetFlags(key, 0)
+            self.mark(key)
             q.CGEventPostToPid(pid, key)
 
     def lift(self):
@@ -37,6 +46,7 @@ class FinderInput:
         point = q.CGEventGetLocation(q.CGEventCreate(None))
         up = q.CGEventCreateMouseEvent(None, q.kCGEventLeftMouseUp, point, q.kCGMouseButtonLeft)
         q.CGEventSetFlags(up, 0)
+        self.mark(up)
         q.CGEventPost(q.kCGHIDEventTap, up)
 
 

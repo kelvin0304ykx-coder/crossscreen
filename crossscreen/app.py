@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 
 from . import __version__
 from .config import AppConfig, app_data_dir, atomic_write, default_host
-from .engine import Engine
+from .shared_engine import SharedEngine
 from .drag import DragBridge
 from .security import ensure_identity, make_pairing, parse_pairing
 from .permissions import mac_accessibility_granted, request_mac_accessibility
@@ -71,17 +71,18 @@ class Window(QMainWindow):
                 self.config_error = "已保存的配置无法读取，请检查后重新配对。"
         else:
             self.config = self.defaults()
-        self.engine = Engine(self)
+        self.engine = SharedEngine(self)
         self.engine.status.connect(self.set_status)
         self.engine.running_changed.connect(self.running_changed)
         self.qa_report = Path(qa_report) if qa_report else None
         self.qa = {"typed_probe": False, "connected": False, "mouse_click": False}
         self.setWindowTitle("跨屏")
         self.setWindowIcon(app_icon())
-        self.resize(760, 740)
-        self.setMinimumSize(680, 650)
+        self.resize(760, 860)
+        self.setMinimumSize(680, 820)
         self.build_ui()
         self.drag = DragBridge(self)
+        self.engine.native_event.connect(self.drag.native_event, Qt.QueuedConnection)
         self.drag.notice.connect(self.file_status.setText)
         self.refresh_layout()
         if self.config_error:
@@ -102,7 +103,7 @@ class Window(QMainWindow):
         title = QLabel("跨屏")
         title.setObjectName("title")
         box.addWidget(title)
-        sub = QLabel("一套键鼠，自然跨越 Windows 与 Mac")
+        sub = QLabel("两边键鼠，都能自然跨越 Windows 与 Mac")
         sub.setObjectName("muted")
         box.addWidget(sub)
 
@@ -124,17 +125,21 @@ class Window(QMainWindow):
         box.addWidget(status_box)
 
         self.settings_widget = QWidget()
-        self.settings_widget.setMinimumHeight(150)
+        self.settings_widget.setMinimumHeight(240)
         form = QFormLayout(self.settings_widget)
         form.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
         form.setLabelAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         form.setContentsMargins(0, 0, 0, 0)
         form.setVerticalSpacing(10)
         self.role = QComboBox()
-        self.role.addItems(["共享键鼠（接收器插在这台）", "接收键鼠（控制这台电脑）"])
+        self.role.addItems(["Windows（等待 Mac 连接）", "Mac（连接 Windows）"])
         self.role.setCurrentIndex(0 if self.config.role == "server" else 1)
         self.role.currentIndexChanged.connect(self.refresh_layout)
         form.addRow("本机角色", self.role)
+        self.input_mode = QComboBox()
+        self.input_mode.addItems(['原有单向键鼠', '双向自然跨屏（测试）'])
+        self.input_mode.setCurrentIndex(1 if self.config.input_mode == 'duplex' else 0)
+        form.addRow('键鼠模式', self.input_mode)
         self.host = QLineEdit(self.config.host)
         self.host.setPlaceholderText("Windows 的局域网 IP 地址")
         self.host.setMaxLength(253)
@@ -152,8 +157,6 @@ class Window(QMainWindow):
         form.addRow("屏幕位置", self.side)
         self.clipboard_box = QCheckBox("共享剪贴板（文字、图片与视频文件）")
         self.clipboard_box.setChecked(self.config.clipboard)
-        self.clipboard_box.setVisible(self.config.role == "server")
-        self.role.currentIndexChanged.connect(lambda i: self.clipboard_box.setVisible(i == 0))
         form.addRow("", self.clipboard_box)
         box.addWidget(self.settings_widget)
         self.file_status = QLabel("文件可拖到对面文件夹，也可复制图片、视频文件后跨机粘贴")
@@ -193,7 +196,7 @@ class Window(QMainWindow):
         self.probe.textChanged.connect(self.probe_text)
         self.probe.installEventFilter(self)
         box.addWidget(self.probe)
-        tip = QLabel("鼠标在哪台，键盘就控制哪台。紧急切回 Windows：Ctrl + Alt + Shift + F12")
+        tip = QLabel("键盘跟随同机鼠标／触控板。双向模式紧急回本机：Ctrl + Alt + Shift + F12")
         tip.setObjectName("muted")
         tip.setWordWrap(True)
         box.addWidget(tip)
@@ -232,6 +235,7 @@ class Window(QMainWindow):
 
     def collect(self):
         return replace(self.config, role="server" if self.role.currentIndex() == 0 else "client",
+                       input_mode='duplex' if self.input_mode.currentIndex() == 1 else 'legacy',
                        host=self.host.text().strip(), port=self.port.value(), clipboard=self.clipboard_box.isChecked(),
                        side="right" if self.side.currentIndex() == 0 else "left").validate()
 
@@ -266,7 +270,7 @@ class Window(QMainWindow):
             peer = parse_pairing(dialog.field.text().strip())
             current = self.collect()
             if peer["role"] == current.role:
-                raise ValueError("两台角色相同；接收器所在电脑选择共享，另一台选择接收。")
+                raise ValueError("两台连接角色相同；Windows 选择等待连接，Mac 选择连接 Windows。")
             if peer["name"] == current.local_name:
                 raise ValueError("这是本机配对信息，请复制另一台电脑的信息。")
             self.config = replace(current, peer_name=peer["name"], peer_fingerprint=peer["fingerprint"],
@@ -347,7 +351,7 @@ class Window(QMainWindow):
 
     def about(self):
         QMessageBox.information(self, "关于跨屏", f"跨屏 {__version__}\n\n"
-            "键鼠共享组件：Deskflow 1.27.0（未经修改）\n"
+            "双向键鼠：CrossScreen 原生输入\n兼容模式：Deskflow 1.27.0（未经修改）\n"
             "使用 TLS 加密与设备证书配对。可在共享端设置剪贴板。文件在目标文件夹内校验后保存。\n\n"
             "https://github.com/deskflow/deskflow\n第三方许可随程序提供。")
 

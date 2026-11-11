@@ -49,6 +49,20 @@ def test_config_roundtrip(tmp_path):
     assert AppConfig.load(tmp_path / "app.json") == c
 
 
+def test_old_profiles_keep_legacy_mode_and_duplex_choice_roundtrips(tmp_path):
+    from crossscreen.config import AppConfig
+    path = tmp_path / 'app.json'
+    path.write_text('{"role":"server"}')
+    old = AppConfig.load(path)
+    assert old.input_mode == 'legacy'
+    old.input_mode = 'duplex'
+    old.save(path)
+    assert AppConfig.load(path).input_mode == 'duplex'
+    old.input_mode = 'invalid'
+    with pytest.raises(ValueError):
+        old.validate()
+
+
 def test_default_address_prefers_real_lan_over_vpn_and_wsl():
     from crossscreen.config import select_lan_address
     addresses = [("TestVPN", "198.18.0.1"), ("vEthernet (WSL)", "10.123.1.1"),

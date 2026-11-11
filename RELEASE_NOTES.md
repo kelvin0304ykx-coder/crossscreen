@@ -1,13 +1,17 @@
-跨屏 CrossScreen 0.2.2-beta.1
+跨屏 CrossScreen 0.4.0-dev2
 
-本次测试版面向 Windows x64 和 Apple 芯片 Mac，两端应用内版本均为 0.2.2。下载对应平台的 ZIP，Windows 完整解压后打开 CrossScreen.exe，Mac 将 CrossScreen.app 放入 Applications。升级前请退出旧程序。
+开发测试版，适用于 Windows x64 与 Apple 芯片 Mac。请两端一起更新，退出旧程序后替换应用，原配对和配置保留。首次使用和升级后都请检查两端已选择「双向自然跨屏（测试）」。
 
-在一台电脑复制文字，把鼠标移到另一台，再粘贴。Windows 使用 Ctrl+C / Ctrl+V，控制 Mac 时用键盘上的 Windows 键+C / V，对应 Command+C / V。
+- 两边都能自然跨屏：Mac 触控板与 Windows 鼠标均能跨过相邻边缘，各自键盘跟随指针。Mac 在左时，Mac 向右到 Windows，Windows 向左到 Mac。
+- 共享文字、富文本、图片内容，以及图片/视频文件。修复 Mac 在后台复制网页、聊天图片或截图时，不能及时同步到 Windows 的问题；无需把跨屏窗口切到前台。
+- 保留文件拖放、证书配对和原模式。键位按接收系统使用：Windows Ctrl+V，Mac Command+V。双向模式紧急恢复本机：Ctrl+Alt+Shift+F12。
 
-先在接收端打开目标文件夹。从 Finder 或资源管理器按住普通文件，拖过两块屏幕的相邻边缘，到目标窗口的文件列表空白处松手。副本出现在该文件夹里，同名文件会追加序号。本版改善了 Mac 向 Windows 快速拖动时的边缘识别和松手处理。每次可拖 1–64 个普通文件，单个上限为 16 GiB。文件夹请先压缩成 ZIP。此上限是程序限制，大文件速度取决于磁盘和网络。
+已验证一组实体双机的两向跨屏和键盘跟随；Mac 后台图片到 Windows 的像素校验和画图粘贴通过。Windows 测试 86 项通过，Mac 82 项通过、4 项平台跳过。具体聊天软件兼容性、连续拖放、中文输入和睡眠恢复尚未完成全面验收。
 
-在一组 Windows 11 x64 和 Apple 芯片 Mac 上，六次连续从 Finder 快拖到资源管理器均产生了内容一致的副本。个别情况下，传完后 Mac 仍短暂报告左键按住，后续拖动已成功。
+图片内容上限 4 MiB / 1600 万像素；较大图片请复制图片文件。图片/视频文件每次最多 64 个、合计 16 GiB。聊天应用需支持对应的图片或附件粘贴。
 
-Mac 包采用本地签名，尚未经过 Apple 公证。更新后若辅助功能授权未生效，移除旧授权项，再添加并开启当前的 CrossScreen.app。首次接收文件时请允许跨屏访问 Finder。
+Mac 包采用本地签名，尚未经过 Apple 公证。升级后如仍提示辅助功能未授权，请移除旧 CrossScreen 条目，重新添加并开启当前 CrossScreen.app，再开始共享。输入监控与 Finder 访问如有系统提示，请按需要授权。
+
+下载包不包含个人配置、配对证书或私钥。SHA-256 见附件 SHA256SUMS.txt。源码及第三方许可随包提供。
 
 [下载与使用指南](https://www.sibaihuo.com/crossscreen/)

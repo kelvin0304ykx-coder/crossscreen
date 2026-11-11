@@ -1,6 +1,6 @@
 # Third-party components
 
-CrossScreen provides its own interface, pairing configuration and process supervision. The bundled input engine is an unmodified upstream Deskflow binary.
+CrossScreen provides its own interface, pairing configuration, native duplex input and process supervision. The compatibility mode uses an unmodified upstream Deskflow binary.
 
 | Component | Version | License / corresponding source |
 | --- | --- | --- |
