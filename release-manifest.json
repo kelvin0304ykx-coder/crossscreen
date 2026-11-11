@@ -28,5 +28,9 @@
       "bytes": 406,
       "sha256": "0c82e139acdb91c0d724f33585e2aa8be9fbb7891eee8a1b3c836a19716cc5a6"
     }
+  ],
+  "cleanup_superseded": [
+    "v0.1.0-beta.1",
+    "v0.2.2-beta.1"
   ]
 }
