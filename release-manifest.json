@@ -1,21 +1,22 @@
 {
-  "tag": "v0.2.2-beta.1",
-  "application_version": "0.2.2",
+  "tag": "v0.4.0-dev2",
+  "application_version": "0.4.0-dev2",
+  "source_commit": "368ba8dd04950dbea2597f7d8e2620457cac87a2",
   "assets": [
     {
-      "name": "CrossScreen-0.2.2-beta.1-macOS-arm64.zip",
-      "bytes": 70769661,
-      "sha256": "4b633a8d196497714b61d5bf22d21c54aa979127f8312aabcd59d349e10ded5b"
+      "name": "CrossScreen-0.4.0-dev2-macOS-arm64.zip",
+      "bytes": 70847180,
+      "sha256": "e3bafde3a81065ccb120c99c121a5ba02b94c8bc5175ad03a540237635cf4080"
     },
     {
-      "name": "CrossScreen-0.2.2-beta.1-source.zip",
-      "bytes": 118909,
-      "sha256": "16ec5fc998a330468a811c06c9139d5bed89ac9a9f48742be384a091f0137701"
+      "name": "CrossScreen-0.4.0-dev2-source.zip",
+      "bytes": 162675,
+      "sha256": "33b4122cabf2bdfa118d6dd045a3d82d25709e269b8249f71e38c9dd9d7a7d0f"
     },
     {
-      "name": "CrossScreen-0.2.2-beta.1-Windows-x64.zip",
-      "bytes": 64395373,
-      "sha256": "eeabf80169510d9a8de8f4b5bebf78c8c77d5f601b3839b5e71c3e4ea65f9303"
+      "name": "CrossScreen-0.4.0-dev2-Windows-x64.zip",
+      "bytes": 64487447,
+      "sha256": "47a9b8f57199ea7d301ea492b6e8453ca12e4c9b47f5eec734bbf5c9ace9ac18"
     },
     {
       "name": "Deskflow-1.27.0-source.tar.gz",
@@ -24,9 +25,8 @@
     },
     {
       "name": "SHA256SUMS.txt",
-      "bytes": 412,
-      "sha256": "9d26c45a7a690866fd06d9295e601967c293b96bb36c2b95cd60cd0089f008cb"
+      "bytes": 406,
+      "sha256": "0c82e139acdb91c0d724f33585e2aa8be9fbb7891eee8a1b3c836a19716cc5a6"
     }
-  ],
-  "source_commit": "6fa05f978d898ed774fd48a4a907a4045452816a"
+  ]
 }
